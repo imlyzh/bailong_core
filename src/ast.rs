@@ -1,4 +1,4 @@
-use std::{collections::HashMap, ops::BitAnd, sync::Arc};
+use std::sync::Arc;
 
 use rustpython_parser::ast;
 
@@ -43,8 +43,6 @@ pub enum AST {
 	// Bind(Handle<Bind>)
 }
 
-#[derive(Debug, Clone)]
-pub struct Record (pub HashMap<Symbol, Type>, pub HashMap<Symbol, Function>);
 
 #[derive(Debug, Clone)]
 pub struct Bind (Expr, Expr);

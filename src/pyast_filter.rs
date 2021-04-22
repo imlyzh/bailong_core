@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+
 use rustpython_parser::ast as pyast;
 
 use crate::{error::Error};
@@ -7,10 +9,43 @@ use crate::{ast::*, utils::invalid_code_error};
 fn stmt_transform(code: &pyast::Statement) -> Result<Expr, Error> {
     let node = &code.node;
     match node {
-        pyast::StatementType::Expression { expression } => {
-            todo!()
+        pyast::StatementType::Expression {
+			expression
+		} => {
+			let pyast::Expression { location, node } = expression;
+			match node {
+			    pyast::ExpressionType::Call {
+					function,
+					args,
+					keywords } => {
+						todo!()
+				}
+			    pyast::ExpressionType::IfExpression {
+					test,
+					body,
+					orelse } => {
+					todo!()
+				}
+			    pyast::ExpressionType::Ellipsis => {
+					todo!()
+				}
+				_ => invalid_code_error(expression.location),
+			}
         }
-        _ => invalid_code_error(code.location),
+		pyast::StatementType::If {
+			test,
+			body,
+			orelse } => {
+				todo!()
+			}
+        pyast::StatementType::Assert {
+			test,
+			msg } => {
+				todo!()
+			}
+		// pyast::StatementType::Assign { targets, value } => {}
+        // pyast::StatementType::Delete { targets } => {}
+		_ => invalid_code_error(code.location),
     }
 }
 
@@ -26,15 +61,15 @@ fn get_type(typ: &pyast::Expression) -> Result<Type, Error> {
 				get_type(b)?);
 			let r = match (a.clone(), b.clone()) {
 			    (Type::Union(mut a), Type::Union(mut b)) => {
-					a.append(&mut b);
+					a.get_mut().append(b.get_mut());
 					Type::Union(a)
 				}
 				(Type::Union(mut a), b) |
 				(b, Type::Union(mut a)) => {
-					a.push(b);
+					a.get_mut().push(b);
 					Type::Union(a)
 				}
-				_ => Type::Union(vec![a, b])
+				_ => Type::Union(RefCell::new(vec![a, b]))
 			};
 			Ok(r)
         }

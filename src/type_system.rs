@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::cell::RefCell;
 use std::sync::Mutex;
 use lazy_static::lazy_static;
@@ -20,18 +21,35 @@ pub enum Type {
 	F64(f64, f64),
 	String(Vec<String>, Option<usize>),
 	Bytes(usize),
-	Union(Vec<Type>),
+	Union(RefCell<Vec<Type>>),
+	Record(Record),
 	Name(Symbol),
 	TApply(Box<Type>, Box<Type>),
-	TVar(RefCell<TypeVar>),
+	TVar(TypeVar),
 }
 
 
 impl Type {
 	pub fn new() -> Type {
-		Type::TVar(
-			RefCell::new(TypeVar::TypeId(new_id()))
-		)
+		Type::TVar(TypeVar::new())
+	}
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct TypeVar (pub Record);
+
+impl TypeVar {
+	fn new() -> Self {
+		Self::default()
+	}
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct Record (pub RefCell<HashMap<Symbol, Type>>);
+
+impl Record {
+	pub fn new() -> Self {
+		Self::default()
 	}
 }
 
@@ -51,11 +69,4 @@ fn new_id() -> usize {
 fn reset_id() -> () {
 	let mut h = TYPE_COUNT.lock().unwrap();
 	*h=0;
-}
-
-
-#[derive(Debug, Clone)]
-pub enum TypeVar {
-	TypeId(usize),
-	TypeName(Symbol, usize),
 }
